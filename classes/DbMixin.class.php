@@ -2,29 +2,40 @@
 
 class DbMixin extends Mixin
 {
+  static $__prefix = 'db';
   static $connections = array();
   static $connection_stack = array();
   static $current;
   static $queries = array();
   
-  static function db_add($handle, $dbs)
+  static function queries()
+  {
+    return self::$queries;
+  }
+
+  static function add($handle, $dbs)
   {
     if(!isset(self::$connections[$handle]) && !$dbs) W::error("Tried to select $handle, but no database settings were defined.");
     if($dbs)
     {
-      $dbh = self::db_connect($dbs);
+      $dbh = self::connect($dbs);
       self::$connections[$handle]['handle'] = $dbh;
       self::$connections[$handle]['credentials'] = $dbs;
     }
   }
   
-  static function db_select($handle, $dbs=null, $dbh = null)
+  static function current()
+  {
+    return self::$current;
+  }
+
+  static function select($handle, $dbs=null, $dbh = null)
   {
     if($dbs)
     {
       if(is_array($dbs))
       {
-        self::db_add($handle, $dbs);
+        self::add($handle, $dbs);
       } else {
         self::$connections[$handle]['handle'] = $dbs;
         self::$connections[$handle]['credentials'] = array();
@@ -34,14 +45,14 @@ class DbMixin extends Mixin
     return self::$current;
   }
   
-  static function db_push($handle, $dbs=null)
+  static function push($handle, $dbs=null)
   {
     self::$connection_stack[] = self::$current;
-    self::$current = self::db_select($handle, $dbs);
+    self::$current = self::select($handle, $dbs);
     return self::$current;
   }
   
-  static function db_pop()
+  static function pop()
   {
     if(count(self::$connection_stack)>0)
     {
@@ -49,7 +60,7 @@ class DbMixin extends Mixin
     }
   }
   
-  static function db_connect($database_settings)
+  static function connect($database_settings)
   {
     $dbh=mysql_connect ($database_settings['host'], $database_settings['username'],$database_settings['password']);
     if (!$dbh)
@@ -141,7 +152,7 @@ class DbMixin extends Mixin
   {
     $args = func_get_args();
   
-    $res = call_user_func_array('query', $args);
+    $res = call_user_func_array('self::query', $args);
     $assoc=array();
     while($rec = mysql_fetch_assoc($res))
     {
@@ -169,7 +180,7 @@ class DbMixin extends Mixin
     wax_exec($cmd);
   }
   
-  static function db_table_exists($name)
+  static function table_exists($name)
   {
     $res = query_assoc("show tables");
     
@@ -181,7 +192,7 @@ class DbMixin extends Mixin
     return false;
   }
   
-  static function db_dump($fname='db.gz', $include_data = true)
+  static function dump($fname='db.gz', $include_data = true)
   {
     if(!startswith($fname, '/')) $fname = BUILD_FPATH ."/{$fname}";
     ensure_writable_folder(dirname($fname));
