@@ -62,7 +62,7 @@ class DbMixin extends Mixin
   
   static function connect($database_settings)
   {
-    $dbh=mysql_connect ($database_settings['host'], $database_settings['username'],$database_settings['password']);
+    $dbh=mysql_pconnect ($database_settings['host'], $database_settings['username'],$database_settings['password']);
 
     if (!$dbh)
     {
