@@ -8,6 +8,7 @@ One named "default" must be defined.
 $config = array(
   'requires'=>array(
     'class_lazyloader',
+    'debug',
   ),
   'databases'=>array(
     'default'=>array(
