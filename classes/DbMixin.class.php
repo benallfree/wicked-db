@@ -18,10 +18,20 @@ class DbMixin extends Mixin
     if(!isset(self::$connections[$handle]) && !$dbs) W::error("Tried to select $handle, but no database settings were defined.");
     if($dbs)
     {
-      $dbh = self::connect($dbs);
-      self::$connections[$handle]['handle'] = $dbh;
-      self::$connections[$handle]['credentials'] = $dbs;
+      if(isset($dbs['dbh']))
+      {
+        $dbh = $dbs['dbh'];
+      } else {
+        $dbh = self::connect($dbs);
+      }
+      self::add_connection($handle, $dbh, $dbs);
     }
+  }
+  
+  static function add_connection($handle, $dbh, $dbs = array())
+  {
+    self::$connections[$handle]['handle'] = $dbh;
+    self::$connections[$handle]['credentials'] = $dbs;
   }
   
   static function current()
